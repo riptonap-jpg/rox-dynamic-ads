@@ -123,6 +123,20 @@ curl -L -o ad-3.mp4 https://download.samplelib.com/mp4/sample-15s.mp4
   a stable identity instead of spawning duplicates.
 - **Sample clips substituted** for the dead Google URLs, as above.
 
+## Bonus work
+
+- **Hosted (bonus 6).** Live at https://rox-dynamic-ads.vercel.app, deployed on
+  Vercel with the database on Turso (hosted libSQL). Markers written on the live
+  site persist to Turso. The "how and why" is the hosting section below.
+- **Real ad injection (bonus 3).** `scripts/render.mjs` is the worker version of
+  the playback swap: it reads the markers, cuts the episode at each marker time,
+  splices in the chosen ad (capped at 15s like the player), and writes a single
+  combined `public/final.mp4` with ffmpeg. Run it with `node scripts/render.mjs`
+  (needs ffmpeg + ffprobe). It is deliberately a standalone worker, not an API
+  route, because transcoding doesn't belong in a serverless request.
+- **Durable execution (bonus 7)** is described in the hosting section: the render
+  job runs on a retrying background worker, not inline.
+
 ## Hosting and a real streaming/ad pipeline
 
 For deployment, the Next.js app goes on **Vercel** — the route handlers run as
