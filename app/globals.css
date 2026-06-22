@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: #fafafa;
+  color: #18181b;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+}
+
+/* thin scrollbar for the timeline scroll area */
+.timeline-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+.timeline-scroll::-webkit-scrollbar-track {
+  background: #f1f1f4;
+  border-radius: 6px;
+}
+.timeline-scroll::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 6px;
+}
+.timeline-scroll::-webkit-scrollbar-thumb:hover {
+  background: #b8b8c0;
+}
+
+/* faux audio-waveform texture for the timeline track */
+.waveform {
+  background-color: #efb4ec;
+  background-image: repeating-linear-gradient(
+    90deg,
+    #d986d4 0px,
+    #d986d4 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  -webkit-mask-image: repeating-linear-gradient(
+    90deg,
+    #000 0,
+    #000 1px,
+    rgba(0, 0, 0, 0.35) 1px,
+    rgba(0, 0, 0, 0.35) 3px
+  );
+}
+
+/* native range slider (player scrubber + zoom) */
+input[type="range"].rng {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: #e4e4e7;
+  outline: none;
+}
+input[type="range"].rng::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #18181b;
+  cursor: pointer;
+}
+input[type="range"].rng::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 50%;
+  background: #18181b;
+  cursor: pointer;
+}
+
+@keyframes blockPop {
+  0% {
+    transform: scaleX(0.5);
+    opacity: 0;
+  }
+  70% {
+    transform: scaleX(1.04);
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+.block-pop {
+  animation: blockPop 0.26s ease-out;
+  transform-origin: left center;
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.overlay-in {
+  animation: overlayIn 0.15s ease-out;
+}
+.dialog-in {
+  animation: dialogIn 0.18s ease-out;
+}
