@@ -76,17 +76,18 @@ export default function AdMarker({
 
   return (
     <div
-      className={`absolute top-1 bottom-1 rounded-md border-2 cursor-grab active:cursor-grabbing select-none ${
+      className={`absolute top-1 bottom-1 rounded-md cursor-grab active:cursor-grabbing select-none ${
         justAdded ? "block-pop" : ""
       }`}
       style={{
         left,
         width,
+        // solid colour fill with a thick black outline, to match the design
         background: c.block,
-        borderColor: selected ? "#18181b" : c.solid,
-        opacity: played ? 0.55 : 1,
+        border: "3px solid #111111",
+        opacity: played ? 0.85 : 1,
         zIndex: selected ? 10 : 5,
-        boxShadow: selected ? "0 0 0 2px rgba(0,0,0,0.15)" : "none",
+        boxShadow: selected ? "0 0 0 2px #111111" : "none",
       }}
       onPointerDown={handleDown}
       onPointerMove={handleMove}

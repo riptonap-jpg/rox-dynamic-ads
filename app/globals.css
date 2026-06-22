@@ -34,22 +34,18 @@ body {
   background: #b8b8c0;
 }
 
-/* faux audio-waveform texture for the timeline track */
+/* faux audio-waveform texture for the timeline track.
+   NOTE: no css mask here on purpose — a mask on the track would also mask the
+   ad-marker blocks rendered inside it, making them look striped/translucent.
+   The stripes are a plain background image so the solid blocks sit cleanly on top. */
 .waveform {
   background-color: #efb4ec;
   background-image: repeating-linear-gradient(
     90deg,
-    #d986d4 0px,
-    #d986d4 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  -webkit-mask-image: repeating-linear-gradient(
-    90deg,
-    #000 0,
-    #000 1px,
-    rgba(0, 0, 0, 0.35) 1px,
-    rgba(0, 0, 0, 0.35) 3px
+    #d886d4 0px,
+    #d886d4 1px,
+    #e6a6e2 1px,
+    #e6a6e2 3px
   );
 }
 
