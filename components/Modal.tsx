@@ -20,7 +20,7 @@ export default function Modal({ onClose, children, width = "max-w-md" }: Props) 
 
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-center bg-black/30 overlay-in p-4"
+      className="fixed inset-0 z-50 grid place-items-center bg-black/[0.16] overlay-in p-4"
       onClick={onClose}
     >
       <div

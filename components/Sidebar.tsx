@@ -13,7 +13,7 @@ const NAV = [
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 shrink-0 hidden lg:flex flex-col bg-white border-r border-zinc-200">
+    <aside className="w-80 shrink-0 hidden lg:flex flex-col bg-white border-r border-zinc-200">
       <div className="p-4 space-y-3">
         <button className="w-full h-10 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors">
           Create an episode
@@ -50,7 +50,7 @@ export default function Sidebar() {
       </nav>
 
       {/* weekly plays card */}
-      <div className="mx-4 mt-6 rounded-xl border border-zinc-200 p-3">
+      <div className="mx-4 mt-6 rounded-2xl border border-zinc-200 p-4">
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs text-zinc-500">Weekly plays</span>
           <span className="text-[11px] text-emerald-600 font-medium">↑ 17%</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useMemo, useEffect, PointerEvent } from "react";
+import { useRef, useState, useEffect, PointerEvent } from "react";
 import { Marker, formatClock } from "@/lib/types";
 import { Layout } from "@/lib/layout";
 import AdMarker from "./AdMarker";
@@ -42,6 +42,29 @@ function barHeight(i: number): number {
   return 0.25 + 0.75 * v;
 }
 
+const TRACK_H = 112; // exact track height from Figma
+
+// the white waveform, drawn only within one episode segment. The bar index uses
+// the segment's absolute offset so the pattern stays continuous across segments,
+// while leaving a real gap wherever an ad is inserted.
+function WaveformPiece({ left, width: w }: { left: number; width: number }) {
+  const step = 4;
+  const n = Math.max(0, Math.floor(w / step));
+  const bars = [];
+  for (let i = 0; i < n; i++) {
+    const x = i * step + 2;
+    const h = barHeight(Math.round((left + x) / step)) * (TRACK_H - 16);
+    bars.push({ x, h });
+  }
+  return (
+    <svg className="absolute top-0 pointer-events-none" style={{ left, width: w, height: TRACK_H }}>
+      {bars.map((b, i) => (
+        <rect key={i} x={b.x} y={(TRACK_H - b.h) / 2} width={2} height={b.h} rx={1} fill="#ffffff" opacity={0.65} />
+      ))}
+    </svg>
+  );
+}
+
 function parseClock(s: string): number | null {
   const parts = s.trim().split(":").map((p) => parseInt(p, 10));
   if (parts.some((n) => isNaN(n))) return null;
@@ -50,8 +73,6 @@ function parseClock(s: string): number | null {
   if (parts.length === 1) return parts[0];
   return null;
 }
-
-const TRACK_H = 84;
 
 export default function Timeline({
   layout,
@@ -94,15 +115,6 @@ export default function Timeline({
 
   const width = Math.max(layout.displayTotal * pixelsPerSecond, 320);
   const interval = tickInterval(pixelsPerSecond);
-
-  const bars = useMemo(() => {
-    const step = 4;
-    const n = Math.floor(width / step);
-    return Array.from({ length: n }, (_, i) => ({
-      x: i * step + 2,
-      h: barHeight(i) * (TRACK_H - 16),
-    }));
-  }, [width]);
 
   function dispAt(clientX: number): number {
     const rect = trackRef.current?.getBoundingClientRect();
@@ -225,30 +237,22 @@ export default function Timeline({
             onPointerMove={move}
             onPointerUp={up}
           >
-            {/* white-bar waveform */}
-            <svg width={width} height={TRACK_H} className="absolute inset-0 pointer-events-none">
-              {bars.map((b, i) => (
-                <rect
-                  key={i}
-                  x={b.x}
-                  y={(TRACK_H - b.h) / 2}
-                  width={2}
-                  height={b.h}
-                  rx={1}
-                  fill="#ffffff"
-                  opacity={0.65}
-                />
-              ))}
-            </svg>
-
-            {/* ad blocks cut into the timeline */}
-            {layout.segments.map((s) =>
-              s.kind === "ad" ? (
+            {/* the track is a row of segments: waveform pieces for the episode,
+                solid blocks where ads are inserted (the waveform truly splits) */}
+            {layout.segments.map((s) => {
+              const left = s.dispStart * pixelsPerSecond;
+              const w = s.dispDur * pixelsPerSecond;
+              if (s.kind === "video") {
+                return (
+                  <WaveformPiece key={`v-${s.dispStart}-${s.vStart}`} left={left} width={w} />
+                );
+              }
+              return (
                 <AdMarker
                   key={s.marker.id}
                   marker={s.marker}
-                  left={s.dispStart * pixelsPerSecond}
-                  width={s.dispDur * pixelsPerSecond}
+                  left={left}
+                  width={w}
                   trackRef={trackRef}
                   pixelsPerSecond={pixelsPerSecond}
                   selected={s.marker.id === selectedMarkerId}
@@ -258,8 +262,8 @@ export default function Timeline({
                   onDragMove={onDragMoveDisplay}
                   onDragEnd={onDragEndDisplay}
                 />
-              ) : null
-            )}
+              );
+            })}
           </div>
 
           {/* red playhead: draggable flag (can be dragged into ad blocks) + line */}

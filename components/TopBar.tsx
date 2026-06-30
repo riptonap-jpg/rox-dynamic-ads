@@ -5,7 +5,7 @@
 
 export default function TopBar() {
   return (
-    <header className="h-14 shrink-0 flex items-center justify-between px-5 bg-white border-b border-zinc-200">
+    <header className="h-[104px] shrink-0 flex items-center justify-between px-16 bg-white border-b border-zinc-200">
       <div className="flex items-center gap-2">
         <svg width="18" height="18" viewBox="0 0 24 24" className="text-zinc-900">
           <path d="M12 3 L21 19 H3 Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />

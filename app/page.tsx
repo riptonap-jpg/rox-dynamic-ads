@@ -161,6 +161,15 @@ export default function EditorPage() {
   }
   // show an ad paused at a given offset (used when scrubbing into an ad block)
   function enterAdAt(m: Marker, offset: number) {
+    const v = videoRef.current;
+    // already inside this ad: just move the ad's playhead, no reload
+    if (isAdPlaying && playingMarkerRef.current === m.id && v) {
+      const cap = Math.min(v.duration || AD_MAX_SECONDS, AD_MAX_SECONDS);
+      const t = Math.max(0, Math.min(offset, cap));
+      v.currentTime = t;
+      setCurrentTime(t);
+      return;
+    }
     const ad = pickAd(m);
     if (!ad) {
       seek(m.time);
@@ -230,6 +239,17 @@ export default function EditorPage() {
     setCurrentTime(clamped);
   }
   function seekBy(delta: number) {
+    const v = videoRef.current;
+    if (!v) return;
+    // while an ad is on screen, the transport scrubs the *ad* clip (so you can
+    // rewind/forward inside the ad), clamped to the ad's capped length
+    if (isAdPlaying) {
+      const cap = Math.min(v.duration || AD_MAX_SECONDS, AD_MAX_SECONDS);
+      const t = Math.max(0, Math.min(v.currentTime + delta, cap));
+      v.currentTime = t;
+      setCurrentTime(t);
+      return;
+    }
     seek(playheadTime + delta);
   }
   function skipNext() {
@@ -572,7 +592,7 @@ export default function EditorPage() {
               />
             </div>
 
-            <div className="flex items-center justify-between mt-6 text-xs text-zinc-400">
+            <div className="flex items-center justify-between mt-8 pt-8 border-t border-zinc-200 text-sm text-zinc-400">
               <span>Video first podcasts</span>
               <span className="flex items-center gap-1">
                 <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3 L21 19 H3 Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>

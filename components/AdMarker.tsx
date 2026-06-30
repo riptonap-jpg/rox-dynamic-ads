@@ -73,16 +73,16 @@ export default function AdMarker({
         left,
         width,
         background: c.block,
-        border: "2.5px solid #111111",
-        borderRadius: 8,
-        opacity: played ? 0.9 : 1,
+        border: "2px solid #111111",
+        borderRadius: 6,
+        opacity: 1,
         zIndex: selected ? 20 : 10,
         boxShadow: selected ? "0 0 0 2px #111111" : "none",
       }}
       onPointerDown={handleDown}
       onPointerMove={handleMove}
       onPointerUp={handleUp}
-      title={`${marker.type} ad @ ${marker.time.toFixed(1)}s`}
+      title={`${marker.type} ad${played ? " (played)" : ""} @ ${marker.time.toFixed(1)}s`}
     >
       {/* type badge, top-left */}
       <span

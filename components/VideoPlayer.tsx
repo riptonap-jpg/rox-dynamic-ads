@@ -96,7 +96,7 @@ export default function VideoPlayer({
       {/* transport with labels, matching the design */}
       <div className="flex items-center justify-between gap-2 px-5 py-3 text-zinc-700">
         <button onClick={onJumpStart} className="flex items-center gap-2 hover:text-zinc-900" aria-label="Jump to start">
-          <span className="w-8 h-8 grid place-items-center rounded-full border border-zinc-200">
+          <span className="w-8 h-8 grid place-items-center rounded-full border border-zinc-300">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5l-10 7 10 7z" /></svg>
           </span>
           <span className="text-sm whitespace-nowrap">Jump to start</span>
@@ -130,7 +130,7 @@ export default function VideoPlayer({
 
         <button onClick={onJumpEnd} className="flex items-center gap-2 hover:text-zinc-900" aria-label="Jump to end">
           <span className="text-sm whitespace-nowrap">Jump to end</span>
-          <span className="w-8 h-8 grid place-items-center rounded-full border border-zinc-200">
+          <span className="w-8 h-8 grid place-items-center rounded-full border border-zinc-300">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5l10 7-10 7z" /></svg>
           </span>
         </button>
