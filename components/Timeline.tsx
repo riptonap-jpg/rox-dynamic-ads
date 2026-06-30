@@ -20,6 +20,7 @@ interface Props {
   onRedo: () => void;
   onZoomChange: (pps: number) => void;
   onSeekDisplay: (disp: number) => void;
+  onScrubCommit: (disp: number) => void;
   onEditTimeDisplay: (disp: number) => void;
   onSelectMarker: (id: string) => void;
   onDragMoveDisplay: (id: string, dispStart: number) => void;
@@ -67,6 +68,7 @@ export default function Timeline({
   onRedo,
   onZoomChange,
   onSeekDisplay,
+  onScrubCommit,
   onEditTimeDisplay,
   onSelectMarker,
   onDragMoveDisplay,
@@ -77,6 +79,9 @@ export default function Timeline({
   const scrubbingRef = useRef(false);
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
+  const [headDrag, setHeadDrag] = useState<number | null>(null); // dragging the playhead
+
+  const headPos = headDrag ?? playheadDisplay;
 
   // when zoom changes, keep the playhead centered (zoom in/out toward it)
   useEffect(() => {
@@ -118,6 +123,23 @@ export default function Timeline({
   function up(e: PointerEvent<HTMLDivElement>) {
     scrubbingRef.current = false;
     trackRef.current?.releasePointerCapture(e.pointerId);
+  }
+
+  // dragging the red playhead flag (can travel into ad blocks)
+  function headDown(e: PointerEvent<HTMLDivElement>) {
+    e.stopPropagation();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    setHeadDrag(headPos);
+  }
+  function headMove(e: PointerEvent<HTMLDivElement>) {
+    if (headDrag == null) return;
+    setHeadDrag(dispAt(e.clientX));
+  }
+  function headUp(e: PointerEvent<HTMLDivElement>) {
+    if (headDrag == null) return;
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    onScrubCommit(headDrag);
+    setHeadDrag(null);
   }
 
   const ticks: number[] = [];
@@ -193,7 +215,7 @@ export default function Timeline({
       </div>
 
       <div ref={scrollRef} className="timeline-scroll overflow-x-auto overflow-y-visible pb-2">
-        <div className="relative pt-3" style={{ width }}>
+        <div className="relative" style={{ width, paddingTop: 20 }}>
           {/* track */}
           <div
             ref={trackRef}
@@ -240,18 +262,29 @@ export default function Timeline({
             )}
           </div>
 
-          {/* red playhead with flag */}
+          {/* red playhead: draggable flag (can be dragged into ad blocks) + line */}
           <div
-            className="absolute top-0 w-[2px] bg-red-500 pointer-events-none z-30 transition-[left] duration-75 ease-linear"
-            style={{ left: playheadDisplay * pixelsPerSecond, height: TRACK_H + 12 }}
+            className="absolute z-30"
+            style={{
+              left: headPos * pixelsPerSecond,
+              top: 0,
+              transition: headDrag == null ? "left 75ms linear" : "none",
+            }}
           >
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-5 h-6 rounded-md bg-red-500 grid place-items-center">
+            <div
+              onPointerDown={headDown}
+              onPointerMove={headMove}
+              onPointerUp={headUp}
+              className="-translate-x-1/2 w-5 h-5 rounded-md bg-red-500 grid place-items-center cursor-ew-resize touch-none"
+              title="Drag to scrub"
+            >
               <span className="grid grid-cols-2 gap-[2px]">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <span key={i} className="w-[2px] h-[2px] rounded-full bg-white" />
                 ))}
               </span>
             </div>
+            <div className="-translate-x-1/2 w-[2px] bg-red-500 pointer-events-none" style={{ height: TRACK_H }} />
           </div>
 
           {/* ruler */}

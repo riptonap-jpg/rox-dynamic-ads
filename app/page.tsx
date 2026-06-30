@@ -145,6 +145,38 @@ export default function EditorPage() {
     dragEnd(id, t);
   }
 
+  // dragging the red playhead and releasing it: land in the episode -> seek;
+  // land inside an ad block -> open that ad at the dragged offset (paused)
+  function scrubCommit(disp: number) {
+    for (const s of layout.segments) {
+      if (disp >= s.dispStart - 0.001 && disp <= s.dispStart + s.dispDur + 0.001) {
+        if (s.kind === "video") {
+          seek(s.vStart + (disp - s.dispStart));
+        } else {
+          enterAdAt(s.marker, Math.min(disp - s.dispStart, AD_MAX_SECONDS - 0.1));
+        }
+        return;
+      }
+    }
+  }
+  // show an ad paused at a given offset (used when scrubbing into an ad block)
+  function enterAdAt(m: Marker, offset: number) {
+    const ad = pickAd(m);
+    if (!ad) {
+      seek(m.time);
+      return;
+    }
+    playedRef.current.add(m.id);
+    playingMarkerRef.current = m.id;
+    resumeAtRef.current = m.time;
+    seekOnLoadRef.current = Math.max(0, offset);
+    playOnLoadRef.current = false; // paused; the user can hit play
+    setIsAdPlaying(true);
+    setAdTitle(ad.title);
+    setActiveSrc(ad.src);
+    setCurrentTime(Math.max(0, offset));
+  }
+
   // ---- initial load -------------------------------------------------------
   useEffect(() => {
     fetch("/api/markers")
@@ -532,6 +564,7 @@ export default function EditorPage() {
                 onRedo={redo}
                 onZoomChange={setZoom}
                 onSeekDisplay={seekDisplay}
+                onScrubCommit={scrubCommit}
                 onEditTimeDisplay={seekDisplay}
                 onSelectMarker={(id) => setSelectedMarkerId(id)}
                 onDragMoveDisplay={dragMoveDisplay}
