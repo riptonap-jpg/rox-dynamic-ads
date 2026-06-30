@@ -65,14 +65,14 @@ export default function MarkerList({
                 {AD_TYPE_LABELS[m.type]}
               </span>
 
-              <div className="ml-auto flex items-center gap-1">
+              <div className="ml-auto flex items-center gap-2">
                 {m.type === "ab" && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onResults(m.id);
                     }}
-                    className="px-2 py-1 rounded-md text-xs text-zinc-500 hover:bg-zinc-100"
+                    className="h-9 px-3 rounded-lg text-sm text-zinc-600 hover:bg-zinc-100 transition-colors"
                     title="A/B results"
                   >
                     Results
@@ -83,7 +83,7 @@ export default function MarkerList({
                     e.stopPropagation();
                     onEdit(m.id);
                   }}
-                  className="px-2 py-1 rounded-md text-xs text-zinc-600 hover:bg-zinc-100"
+                  className="h-9 px-4 rounded-lg border border-zinc-200 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors"
                 >
                   Edit
                 </button>
