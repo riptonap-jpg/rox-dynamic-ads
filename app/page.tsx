@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Marker,
   AdType,
@@ -9,6 +9,13 @@ import {
   MAIN_VIDEO_SRC,
   adById,
 } from "@/lib/types";
+import {
+  buildLayout,
+  videoToDisplay,
+  displayToVideo,
+  adDispStart,
+  AD_DISPLAY_SECONDS,
+} from "@/lib/layout";
 import TopBar from "@/components/TopBar";
 import Sidebar from "@/components/Sidebar";
 import MarkerList from "@/components/MarkerList";
@@ -18,12 +25,10 @@ import CreateMarkerModal from "@/components/CreateMarkerModal";
 import AdLibraryModal from "@/components/AdLibraryModal";
 import ABResultsModal from "@/components/ABResultsModal";
 
-// visual width of a timeline ad block, in seconds
-const BLOCK_SECONDS = 15;
-
-// cap how long an ad can play before we resume the episode, so a long clip
-// can't hold the playback hostage (real ad pods have a max duration too)
-const AD_MAX_SECONDS = 15;
+// cap how long an ad can play before we resume the episode. Matches the ad's
+// width on the timeline (AD_DISPLAY_SECONDS) so the playhead reaches the end of
+// the ad block exactly as the ad finishes.
+const AD_MAX_SECONDS = AD_DISPLAY_SECONDS;
 
 // ---- helpers ---------------------------------------------------------------
 
@@ -90,6 +95,7 @@ export default function EditorPage() {
   // ad-playback bookkeeping
   const playedRef = useRef<Set<string>>(new Set());
   const resumeAtRef = useRef(0);
+  const playingMarkerRef = useRef<string | null>(null); // marker whose ad is on
   const seekOnLoadRef = useRef<number | null>(null);
   const playOnLoadRef = useRef(false);
   const seededFrameRef = useRef(false); // nudge off the black opening frame once
@@ -104,6 +110,40 @@ export default function EditorPage() {
   }
 
   const playheadTime = isAdPlaying ? resumeAtRef.current : currentTime;
+
+  // the displayed timeline (episode cut by ad blocks) and the playhead's
+  // position on it. While an ad plays, the playhead travels across the ad block.
+  const layout = useMemo(
+    () => buildLayout(markers, mainDuration),
+    [markers, mainDuration]
+  );
+  const playheadDisplay = isAdPlaying
+    ? adDispStart(layout, playingMarkerRef.current ?? "") +
+      Math.min(currentTime, AD_MAX_SECONDS)
+    : videoToDisplay(layout, currentTime);
+
+  // click/scrub on the timeline -> episode time
+  function seekDisplay(disp: number) {
+    seek(displayToVideo(layout, disp));
+  }
+  // drag an ad block: map its target left edge (in display seconds) back to an
+  // episode time, using a layout that excludes the dragged marker so it's stable
+  function dragMoveDisplay(id: string, dispStart: number) {
+    const lw = buildLayout(
+      markers.filter((m) => m.id !== id),
+      mainDuration
+    );
+    const t = Math.max(0, Math.min(displayToVideo(lw, dispStart), mainDuration || dispStart));
+    dragMove(id, t);
+  }
+  function dragEndDisplay(id: string, dispStart: number) {
+    const lw = buildLayout(
+      markers.filter((m) => m.id !== id),
+      mainDuration
+    );
+    const t = Math.max(0, Math.min(displayToVideo(lw, dispStart), mainDuration || dispStart));
+    dragEnd(id, t);
+  }
 
   // ---- initial load -------------------------------------------------------
   useEffect(() => {
@@ -192,6 +232,7 @@ export default function EditorPage() {
     const ad = pickAd(m);
     if (!ad) return;
     playedRef.current.add(m.id);
+    playingMarkerRef.current = m.id;
     resumeAtRef.current = m.time;
     seekOnLoadRef.current = 0;
     playOnLoadRef.current = true;
@@ -279,6 +320,7 @@ export default function EditorPage() {
   function endAdAndResume() {
     seekOnLoadRef.current = resumeAtRef.current;
     playOnLoadRef.current = true;
+    playingMarkerRef.current = null;
     setIsAdPlaying(false);
     setAdTitle(null);
     setActiveSrc(MAIN_VIDEO_SRC);
@@ -476,24 +518,24 @@ export default function EditorPage() {
 
             <div className="mt-5">
               <Timeline
-                duration={mainDuration}
+                layout={layout}
                 pixelsPerSecond={zoom}
-                blockSeconds={BLOCK_SECONDS}
-                playheadTime={playheadTime}
+                zoom={zoom}
+                playheadDisplay={playheadDisplay}
                 markers={markers}
                 selectedMarkerId={selectedMarkerId}
                 playedIds={playedRef.current}
                 justAddedId={justAddedId}
                 canUndo={histIndex > 0}
                 canRedo={histIndex < history.length - 1}
-                zoom={zoom}
                 onUndo={undo}
                 onRedo={redo}
                 onZoomChange={setZoom}
-                onSeek={seek}
+                onSeekDisplay={seekDisplay}
+                onEditTimeDisplay={seekDisplay}
                 onSelectMarker={(id) => setSelectedMarkerId(id)}
-                onDragMove={dragMove}
-                onDragEnd={dragEnd}
+                onDragMoveDisplay={dragMoveDisplay}
+                onDragEndDisplay={dragEndDisplay}
               />
             </div>
 

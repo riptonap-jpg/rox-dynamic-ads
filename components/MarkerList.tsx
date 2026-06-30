@@ -59,7 +59,7 @@ export default function MarkerList({
                 {formatClock(m.time)}
               </span>
               <span
-                className="px-2 py-0.5 rounded-full text-[11px] font-medium"
+                className="px-2 py-1 rounded-md text-[11px] font-medium leading-none"
                 style={{ background: c.badgeBg, color: c.badgeText }}
               >
                 {AD_TYPE_LABELS[m.type]}
@@ -92,11 +92,11 @@ export default function MarkerList({
                     e.stopPropagation();
                     onDelete(m.id);
                   }}
-                  className="w-7 h-7 grid place-items-center rounded-md text-red-500 bg-red-50 hover:bg-red-100"
+                  className="w-8 h-8 grid place-items-center rounded-lg text-red-500 bg-red-50 hover:bg-red-100"
                   aria-label="Delete marker"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                    <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
                   </svg>
                 </button>
               </div>

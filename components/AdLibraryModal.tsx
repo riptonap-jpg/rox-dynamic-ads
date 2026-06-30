@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Marker, SAMPLE_ADS } from "@/lib/types";
+import { Marker, SAMPLE_ADS, Ad } from "@/lib/types";
 import Modal from "./Modal";
 
 interface Props {
@@ -10,15 +10,21 @@ interface Props {
   onSave: (adIds: string[]) => void;
 }
 
-const FOLDERS = [
-  "All folders",
-  "Eight Sleep",
-  "Pod 3",
-  "Q3 Promo",
-  "Athlete Campaign",
-  "Brilliant",
-  "Milligram",
+// folder tree (visual). `child` items are indented under the parent above them.
+const FOLDERS: { label: string; child?: boolean; chevron?: boolean }[] = [
+  { label: "All folders" },
+  { label: "Eight Sleep", chevron: true },
+  { label: "Pod 3", child: true },
+  { label: "Q3 Promo", child: true },
+  { label: "Athlete Campaign", child: true },
+  { label: "Brilliant", chevron: true },
+  { label: "Milligram", chevron: true },
 ];
+
+function thumbFor(ad: Ad): string {
+  // a stable random image per ad (Rox: "just grab three random images")
+  return `https://picsum.photos/seed/${ad.id}/120/90`;
+}
 
 export default function AdLibraryModal({ marker, onClose, onSave }: Props) {
   const isStatic = marker.type === "static";
@@ -27,7 +33,6 @@ export default function AdLibraryModal({ marker, onClose, onSave }: Props) {
 
   function toggle(id: string) {
     if (isStatic) {
-      // static plays exactly one ad
       setSelected([id]);
       return;
     }
@@ -53,34 +58,43 @@ export default function AdLibraryModal({ marker, onClose, onSave }: Props) {
             : "Pick the pool of ads that can play at this marker"}
         </p>
 
-        <div className="flex gap-4 h-[360px]">
-          {/* folder tree (visual) */}
-          <div className="w-44 shrink-0 border border-zinc-200 rounded-xl p-2 overflow-y-auto">
-            <div className="flex items-center gap-2 px-2 py-1.5 text-xs text-zinc-400">
+        <div className="flex gap-4 h-[380px]">
+          {/* folder tree */}
+          <div className="w-44 shrink-0 flex flex-col">
+            <div className="flex items-center gap-2 px-2.5 h-9 mb-2 rounded-lg border border-zinc-200 text-sm text-zinc-400">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+              Search library...
+            </div>
+            <div className="flex items-center gap-2 px-1 py-1.5 text-xs text-zinc-400">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 6h2M4 12h2M4 18h2M9 6h11M9 12h11M9 18h11" /></svg>
               Ad library
             </div>
-            {FOLDERS.map((f, i) => (
-              <button
-                key={f}
-                className={`w-full text-left px-2 py-1.5 rounded-md text-sm hover:bg-zinc-50 ${
-                  i === 0 ? "text-zinc-900 font-medium" : "text-zinc-600"
-                } ${i > 1 && i < 5 ? "pl-5" : ""}`}
-              >
-                {f}
-              </button>
-            ))}
+            <div className="overflow-y-auto">
+              {FOLDERS.map((f, i) => (
+                <button
+                  key={f.label}
+                  className={`w-full flex items-center justify-between px-1 py-1.5 rounded-md text-sm hover:bg-zinc-50 ${
+                    i === 0 ? "text-zinc-900 font-medium" : "text-zinc-600"
+                  } ${f.child ? "pl-5" : ""}`}
+                >
+                  <span>{f.label}</span>
+                  {f.chevron && (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400"><path d="m6 9 6 6 6-6" /></svg>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* ad cards */}
           <div className="flex-1 flex flex-col min-w-0">
             <div className="flex gap-2 mb-3">
+              <div className="px-3 h-9 grid place-items-center rounded-lg border border-zinc-200 text-sm text-zinc-500 whitespace-nowrap">
+                Upload date ⌄
+              </div>
               <div className="flex-1 flex items-center gap-2 px-3 h-9 rounded-lg border border-zinc-200 text-sm text-zinc-400">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
-                Search library...
-              </div>
-              <div className="px-3 h-9 grid place-items-center rounded-lg border border-zinc-200 text-sm text-zinc-500">
-                Upload date ⌄
+                Search ads...
               </div>
             </div>
 
@@ -94,22 +108,32 @@ export default function AdLibraryModal({ marker, onClose, onSave }: Props) {
                       checked ? "border-zinc-900 bg-zinc-50" : "border-zinc-200 hover:bg-zinc-50"
                     }`}
                   >
-                    <span className="w-16 h-12 rounded-md bg-gradient-to-br from-zinc-200 to-zinc-300 grid place-items-center text-zinc-500 text-xs font-semibold shrink-0">
-                      {ad.advertiser.slice(0, 2)}
-                    </span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={thumbFor(ad)}
+                      alt=""
+                      width={64}
+                      height={48}
+                      className="w-16 h-12 rounded-md object-cover bg-zinc-200 shrink-0"
+                    />
                     <span className="flex-1 min-w-0">
                       <span className="block text-sm font-medium text-zinc-900 truncate">{ad.title}</span>
                       <span className="block text-xs text-zinc-400">{ad.date} · {ad.duration}</span>
-                      <span className="inline-flex items-center gap-1 mt-1 text-[11px] text-zinc-500">
-                        <span className="px-1.5 py-0.5 rounded bg-zinc-100">{ad.advertiser}</span>
-                        <span className="px-1.5 py-0.5 rounded bg-zinc-100">{ad.folder}</span>
+                      <span className="flex items-center gap-1.5 mt-1">
+                        <span className="w-4 h-4 rounded-full bg-gradient-to-br from-violet-400 to-fuchsia-500" />
+                        <span className="text-[11px] text-zinc-500">Denis Loginoff</span>
                       </span>
+                    </span>
+                    <span className="flex items-center gap-1.5 mr-1">
+                      <span className="px-1.5 py-0.5 rounded bg-zinc-100 text-[11px] text-zinc-600">{ad.advertiser}</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-300"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                      <span className="px-1.5 py-0.5 rounded bg-zinc-100 text-[11px] text-zinc-600">{ad.folder}</span>
                     </span>
                     <input
                       type="checkbox"
                       checked={checked}
                       onChange={() => toggle(ad.id)}
-                      className="w-4 h-4 accent-zinc-900"
+                      className="w-4 h-4 accent-zinc-900 shrink-0"
                     />
                   </label>
                 );

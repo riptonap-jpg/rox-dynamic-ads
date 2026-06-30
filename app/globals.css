@@ -34,19 +34,10 @@ body {
   background: #b8b8c0;
 }
 
-/* faux audio-waveform texture for the timeline track.
-   NOTE: no css mask here on purpose — a mask on the track would also mask the
-   ad-marker blocks rendered inside it, making them look striped/translucent.
-   The stripes are a plain background image so the solid blocks sit cleanly on top. */
+/* timeline track base. The waveform (white bars) is drawn as an SVG overlay in
+   Timeline.tsx; ad blocks are solid and sit on top, "breaking" the waveform. */
 .waveform {
-  background-color: #efb4ec;
-  background-image: repeating-linear-gradient(
-    90deg,
-    #d886d4 0px,
-    #d886d4 1px,
-    #e6a6e2 1px,
-    #e6a6e2 3px
-  );
+  background-color: #e7a8e4;
 }
 
 /* native range slider (player scrubber + zoom) */

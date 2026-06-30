@@ -27,33 +27,6 @@ interface Props {
   onPause: () => void;
 }
 
-function CtrlBtn({
-  label,
-  onClick,
-  children,
-  big,
-}: {
-  label: string;
-  onClick: () => void;
-  children: React.ReactNode;
-  big?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      title={label}
-      aria-label={label}
-      className={
-        big
-          ? "w-11 h-11 grid place-items-center rounded-full bg-zinc-900 text-white hover:bg-zinc-800 transition-colors"
-          : "w-9 h-9 grid place-items-center rounded-lg text-zinc-600 hover:bg-zinc-100 transition-colors"
-      }
-    >
-      {children}
-    </button>
-  );
-}
-
 export default function VideoPlayer({
   videoRef,
   src,
@@ -80,7 +53,7 @@ export default function VideoPlayer({
   const pct = duration ? (playheadTime / duration) * 100 : 0;
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+    <div className="rounded-2xl border border-zinc-200 bg-white overflow-hidden">
       <div className="relative bg-black aspect-video">
         <video
           ref={videoRef}
@@ -102,13 +75,10 @@ export default function VideoPlayer({
         )}
       </div>
 
-      {/* thin scrubber (drag to seek) */}
+      {/* thin progress bar (drag to seek) */}
       <div className="px-4 pt-3">
-        <div className="relative h-1.5 rounded-full bg-zinc-200">
-          <div
-            className="absolute inset-y-0 left-0 rounded-full bg-zinc-900"
-            style={{ width: `${pct}%` }}
-          />
+        <div className="relative h-1 rounded-full bg-zinc-200">
+          <div className="absolute inset-y-0 left-0 rounded-full bg-zinc-900" style={{ width: `${pct}%` }} />
           <input
             type="range"
             min={0}
@@ -123,38 +93,54 @@ export default function VideoPlayer({
         </div>
       </div>
 
-      {/* transport */}
-      <div className="flex items-center justify-center gap-1.5 px-4 py-3">
-        <CtrlBtn label="Jump to start" onClick={onJumpStart}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5l-10 7 10 7z" /></svg>
-        </CtrlBtn>
-        <CtrlBtn label="Back 10s" onClick={() => onSeekBy(-10)}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M11 8 7 4m0 0 4-4M7 4h6a6 6 0 1 1-6 6" /></svg>
-        </CtrlBtn>
-        <CtrlBtn label="Previous marker" onClick={onSkipPrev}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11 12 19 6v12zM3 12l8-6v12z" /></svg>
-        </CtrlBtn>
-        <CtrlBtn label={isPlaying ? "Pause" : "Play"} onClick={onTogglePlay} big>
-          {isPlaying ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-          )}
-        </CtrlBtn>
-        <CtrlBtn label="Next marker" onClick={onSkipNext}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M13 12 5 6v12zM21 12l-8-6v12z" /></svg>
-        </CtrlBtn>
-        <CtrlBtn label="Forward 10s" onClick={() => onSeekBy(10)}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m13 8 4-4m0 0-4-4m4 4h-6a6 6 0 1 0 6 6" /></svg>
-        </CtrlBtn>
-        <CtrlBtn label="Jump to end" onClick={onJumpEnd}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5l10 7-10 7z" /></svg>
-        </CtrlBtn>
+      {/* transport with labels, matching the design */}
+      <div className="flex items-center justify-between gap-2 px-5 py-3 text-zinc-700">
+        <button onClick={onJumpStart} className="flex items-center gap-2 hover:text-zinc-900" aria-label="Jump to start">
+          <span className="w-8 h-8 grid place-items-center rounded-full border border-zinc-200">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5l-10 7 10 7z" /></svg>
+          </span>
+          <span className="text-sm whitespace-nowrap">Jump to start</span>
+        </button>
 
-        <span className="ml-3 text-xs tabular-nums text-zinc-400 w-20 text-right">
-          {isAdPlaying ? `ad ${formatTime(currentTime)}` : `${formatTime(playheadTime)} / ${formatTime(duration)}`}
-        </span>
+        <button onClick={() => onSeekBy(-10)} className="flex items-center gap-1.5 hover:text-zinc-900" aria-label="Back 10 seconds">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M11 8 7 4l4-4M7 4h6a6 6 0 1 1-6 6" /></svg>
+          <span className="text-sm">10s</span>
+        </button>
+
+        <button onClick={onSkipPrev} className="hover:text-zinc-900" aria-label="Previous marker">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M11 12 19 6v12zM3 12l8-6v12z" /></svg>
+        </button>
+
+        <button onClick={onTogglePlay} className="text-zinc-900 hover:opacity-80" aria-label={isPlaying ? "Pause" : "Play"}>
+          {isPlaying ? (
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4.5" height="14" rx="1.2" /><rect x="13.5" y="5" width="4.5" height="14" rx="1.2" /></svg>
+          ) : (
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z" /></svg>
+          )}
+        </button>
+
+        <button onClick={onSkipNext} className="hover:text-zinc-900" aria-label="Next marker">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 12 5 6v12zM21 12l-8-6v12z" /></svg>
+        </button>
+
+        <button onClick={() => onSeekBy(10)} className="flex items-center gap-1.5 hover:text-zinc-900" aria-label="Forward 10 seconds">
+          <span className="text-sm">10s</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m13 8 4-4-4-4M17 4h-6a6 6 0 1 0 6 6" /></svg>
+        </button>
+
+        <button onClick={onJumpEnd} className="flex items-center gap-2 hover:text-zinc-900" aria-label="Jump to end">
+          <span className="text-sm whitespace-nowrap">Jump to end</span>
+          <span className="w-8 h-8 grid place-items-center rounded-full border border-zinc-200">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5l10 7-10 7z" /></svg>
+          </span>
+        </button>
       </div>
+
+      {isAdPlaying && (
+        <div className="px-5 pb-2 -mt-1 text-right text-xs tabular-nums text-zinc-400">
+          ad {formatTime(currentTime)}
+        </div>
+      )}
     </div>
   );
 }
