@@ -72,7 +72,7 @@ export default function MarkerList({
                       e.stopPropagation();
                       onResults(m.id);
                     }}
-                    className="h-9 px-3 rounded-lg text-sm text-zinc-600 hover:bg-zinc-100 transition-colors"
+                    className="px-2 py-1 rounded-md text-xs text-zinc-500 hover:bg-zinc-100"
                     title="A/B results"
                   >
                     Results
@@ -83,7 +83,7 @@ export default function MarkerList({
                     e.stopPropagation();
                     onEdit(m.id);
                   }}
-                  className="h-9 px-4 rounded-lg border border-zinc-200 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors"
+                  className="px-2 py-1 rounded-md text-xs text-zinc-600 hover:bg-zinc-100"
                 >
                   Edit
                 </button>
@@ -95,8 +95,8 @@ export default function MarkerList({
                   className="w-9 h-9 shrink-0 grid place-items-center rounded-lg bg-[#fca5a5] text-[#7f1d1d] hover:bg-[#f87171] transition-colors"
                   aria-label="Delete marker"
                 >
-                  {/* lucide trash-2, 20px (36px box, 8px padding) */}
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {/* trash-2 icon 16px in a 36px button — his exact spec (10px padding) */}
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M3 6h18" />
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
                     <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
