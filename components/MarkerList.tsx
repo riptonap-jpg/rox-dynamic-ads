@@ -58,26 +58,28 @@ export default function MarkerList({
               <span className="px-2 py-1 rounded-md border border-zinc-200 text-xs tabular-nums text-zinc-700">
                 {formatClock(m.time)}
               </span>
-              <span
-                className="px-2 py-1 rounded-md text-[11px] font-medium leading-none"
-                style={{ background: c.badgeBg, color: c.badgeText }}
-              >
-                {AD_TYPE_LABELS[m.type]}
-              </span>
+              {m.type === "ab" ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onResults(m.id);
+                  }}
+                  className="px-2 py-1 rounded-md text-[11px] font-medium leading-none hover:opacity-80 transition-opacity"
+                  style={{ background: c.badgeBg, color: c.badgeText }}
+                  title="View A/B results"
+                >
+                  {AD_TYPE_LABELS[m.type]}
+                </button>
+              ) : (
+                <span
+                  className="px-2 py-1 rounded-md text-[11px] font-medium leading-none"
+                  style={{ background: c.badgeBg, color: c.badgeText }}
+                >
+                  {AD_TYPE_LABELS[m.type]}
+                </span>
+              )}
 
-              <div className="ml-auto flex items-center gap-2">
-                {m.type === "ab" && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onResults(m.id);
-                    }}
-                    className="px-2 py-1 rounded-md text-xs text-zinc-500 hover:bg-zinc-100"
-                    title="A/B results"
-                  >
-                    Results
-                  </button>
-                )}
+              <div className="ml-auto flex items-center gap-2 shrink-0">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
