@@ -42,26 +42,37 @@ function barHeight(i: number): number {
   return 0.25 + 0.75 * v;
 }
 
-const TRACK_H = 112; // exact track height from Figma
+// Frame 85: track is 128px tall, zinc/900 fill, 8px padding, 2px gap between
+// segments. The video (fuchsia) and ad blocks are sibling cards on the dark
+// fill — the dark showing through the padding/gaps is the "split", not an outline.
+const TRACK_H = 128; // Figma Frame 85 height (Fixed 128)
+const INNER_PAD = 8; // Figma padding 8 -> inner content 112
+const SEG_GAP = 2; // Figma gap 2 between segments
+const INNER_H = TRACK_H - INNER_PAD * 2; // 112, the block height
 
-// the white waveform, drawn only within one episode segment. The bar index uses
-// the segment's absolute offset so the pattern stays continuous across segments,
-// while leaving a real gap wherever an ad is inserted.
+// One episode segment: a fuchsia/300 card with the white waveform inside it.
+// A real ad block sits between two of these with a 2px dark gap on each side, so
+// the waveform genuinely breaks rather than running underneath the ad.
 function WaveformPiece({ left, width: w }: { left: number; width: number }) {
   const step = 4;
   const n = Math.max(0, Math.floor(w / step));
   const bars = [];
   for (let i = 0; i < n; i++) {
     const x = i * step + 2;
-    const h = barHeight(Math.round((left + x) / step)) * (TRACK_H - 16);
+    const h = barHeight(Math.round((left + x) / step)) * (INNER_H - 40) + 10;
     bars.push({ x, h });
   }
   return (
-    <svg className="absolute top-0 pointer-events-none" style={{ left, width: w, height: TRACK_H }}>
-      {bars.map((b, i) => (
-        <rect key={i} x={b.x} y={(TRACK_H - b.h) / 2} width={2} height={b.h} rx={1} fill="#ffffff" opacity={0.65} />
-      ))}
-    </svg>
+    <div
+      className="absolute overflow-hidden pointer-events-none"
+      style={{ left, top: INNER_PAD, width: w, height: INNER_H, background: "#f0abfc", borderRadius: 6 }}
+    >
+      <svg width={w} height={INNER_H}>
+        {bars.map((b, i) => (
+          <rect key={i} x={b.x} y={(INNER_H - b.h) / 2} width={2} height={b.h} rx={1} fill="#ffffff" opacity={0.6} />
+        ))}
+      </svg>
+    </div>
   );
 }
 
@@ -113,13 +124,13 @@ export default function Timeline({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pixelsPerSecond]);
 
-  const width = Math.max(layout.displayTotal * pixelsPerSecond, 320);
+  const width = Math.max(layout.displayTotal * pixelsPerSecond + INNER_PAD * 2, 320);
   const interval = tickInterval(pixelsPerSecond);
 
   function dispAt(clientX: number): number {
     const rect = trackRef.current?.getBoundingClientRect();
     if (!rect) return 0;
-    let d = (clientX - rect.left) / pixelsPerSecond;
+    let d = (clientX - rect.left - INNER_PAD) / pixelsPerSecond;
     if (d < 0) d = 0;
     if (d > layout.displayTotal) d = layout.displayTotal;
     return d;
@@ -228,20 +239,25 @@ export default function Timeline({
 
       <div ref={scrollRef} className="timeline-scroll overflow-x-auto overflow-y-visible pb-2">
         <div className="relative" style={{ width, paddingTop: 20 }}>
-          {/* track */}
+          {/* track: dark zinc/900 fill. Segments are inset 8px and separated by
+              a 2px gap, so the dark shows through as the frame + the splits. */}
           <div
             ref={trackRef}
-            className="waveform relative rounded-xl border-[3px] border-zinc-900 cursor-pointer touch-none overflow-hidden"
-            style={{ height: TRACK_H }}
+            className="relative cursor-pointer touch-none overflow-hidden"
+            style={{
+              height: TRACK_H,
+              background: "#18181b",
+              borderTopLeftRadius: 8,
+              borderBottomLeftRadius: 8,
+              borderRight: "1px solid #18181b",
+            }}
             onPointerDown={down}
             onPointerMove={move}
             onPointerUp={up}
           >
-            {/* the track is a row of segments: waveform pieces for the episode,
-                solid blocks where ads are inserted (the waveform truly splits) */}
             {layout.segments.map((s) => {
-              const left = s.dispStart * pixelsPerSecond;
-              const w = s.dispDur * pixelsPerSecond;
+              const left = INNER_PAD + s.dispStart * pixelsPerSecond;
+              const w = Math.max(0, s.dispDur * pixelsPerSecond - SEG_GAP);
               if (s.kind === "video") {
                 return (
                   <WaveformPiece key={`v-${s.dispStart}-${s.vStart}`} left={left} width={w} />
@@ -253,6 +269,9 @@ export default function Timeline({
                   marker={s.marker}
                   left={left}
                   width={w}
+                  top={INNER_PAD}
+                  height={INNER_H}
+                  pad={INNER_PAD}
                   trackRef={trackRef}
                   pixelsPerSecond={pixelsPerSecond}
                   selected={s.marker.id === selectedMarkerId}
@@ -270,7 +289,7 @@ export default function Timeline({
           <div
             className="absolute z-30"
             style={{
-              left: headPos * pixelsPerSecond,
+              left: INNER_PAD + headPos * pixelsPerSecond,
               top: 0,
               transition: headDrag == null ? "left 75ms linear" : "none",
             }}
@@ -294,7 +313,7 @@ export default function Timeline({
           {/* ruler */}
           <div className="relative h-6 mt-2 select-none">
             {ticks.map((t) => (
-              <div key={t} className="absolute top-0 flex flex-col items-center" style={{ left: t * pixelsPerSecond, transform: "translateX(-50%)" }}>
+              <div key={t} className="absolute top-0 flex flex-col items-center" style={{ left: INNER_PAD + t * pixelsPerSecond, transform: "translateX(-50%)" }}>
                 <span className="w-px h-2 bg-zinc-300" />
                 <span className="mt-1 text-[11px] text-zinc-400 tabular-nums">{formatClock(t)}</span>
               </div>

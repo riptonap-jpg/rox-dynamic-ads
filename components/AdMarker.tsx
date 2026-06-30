@@ -7,6 +7,9 @@ interface Props {
   marker: Marker;
   left: number; // px, left edge of the ad block on the track
   width: number; // px, block width (ad display duration * pps)
+  top: number; // px, inset from the track top (the 8px padding)
+  height: number; // px, block height (inner track height, 112)
+  pad: number; // px, the track's left padding (origin offset)
   trackRef: RefObject<HTMLDivElement | null>;
   pixelsPerSecond: number;
   selected: boolean;
@@ -22,6 +25,9 @@ export default function AdMarker({
   marker,
   left,
   width,
+  top,
+  height,
+  pad,
   trackRef,
   pixelsPerSecond,
   selected,
@@ -51,8 +57,8 @@ export default function AdMarker({
     const rect = trackRef.current?.getBoundingClientRect();
     if (!rect) return;
     let leftPx = e.clientX - rect.left - grabOffsetRef.current;
-    if (leftPx < 0) leftPx = 0;
-    const dispStart = leftPx / pixelsPerSecond;
+    if (leftPx < pad) leftPx = pad;
+    const dispStart = (leftPx - pad) / pixelsPerSecond;
     liveRef.current = dispStart;
     onDragMove(marker.id, dispStart);
   }
@@ -66,34 +72,34 @@ export default function AdMarker({
 
   return (
     <div
-      className={`absolute top-0 bottom-0 cursor-grab active:cursor-grabbing select-none ${
+      className={`absolute cursor-grab active:cursor-grabbing select-none ${
         justAdded ? "block-pop" : ""
       }`}
       style={{
         left,
         width,
+        top,
+        height,
         background: c.block,
-        border: "2px solid #111111",
         borderRadius: 6,
-        opacity: 1,
         zIndex: selected ? 20 : 10,
-        boxShadow: selected ? "0 0 0 2px #111111" : "none",
+        boxShadow: selected ? `0 0 0 2px ${c.solid}` : "none",
       }}
       onPointerDown={handleDown}
       onPointerMove={handleMove}
       onPointerUp={handleUp}
       title={`${marker.type} ad${played ? " (played)" : ""} @ ${marker.time.toFixed(1)}s`}
     >
-      {/* type badge, top-left */}
+      {/* type badge, top-left (10px inset, matches Figma marker padding) */}
       <span
-        className="absolute top-1 left-1 px-1.5 h-5 grid place-items-center rounded-md text-[11px] font-bold text-white"
-        style={{ background: c.solid, border: "1.5px solid #111111" }}
+        className="absolute top-2 left-2 px-1.5 h-5 grid place-items-center rounded-md text-[11px] font-bold"
+        style={{ background: c.badgeBg, border: `1.5px solid ${c.solid}`, color: c.badgeText }}
       >
         {c.letter}
       </span>
-      {/* grip, bottom-center */}
+      {/* grip dots, bottom-center */}
       <span
-        className="absolute bottom-1.5 left-1/2 -translate-x-1/2 grid grid-cols-2 gap-x-0.5 gap-y-[3px]"
+        className="absolute bottom-2 left-1/2 -translate-x-1/2 grid grid-cols-2 gap-x-0.5 gap-y-[3px]"
         aria-hidden
       >
         {Array.from({ length: 6 }).map((_, i) => (
