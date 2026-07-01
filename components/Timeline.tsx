@@ -39,7 +39,8 @@ function barHeight(i: number): number {
   const v =
     Math.abs(Math.sin(i * 0.7) * 0.5 + Math.sin(i * 0.31 + 1.3) * 0.35 +
       Math.sin(i * 1.13) * 0.15);
-  return 0.25 + 0.75 * v;
+  // lower floor so bars drop short as well as tall (real audio envelope)
+  return 0.1 + 0.9 * v;
 }
 
 // Frame 85: track is 128px tall, zinc/900 fill, 8px padding, 2px gap between
@@ -54,13 +55,13 @@ const INNER_H = TRACK_H - INNER_PAD * 2; // 112, the block height
 // A real ad block sits between two of these with a 2px dark gap on each side, so
 // the waveform genuinely breaks rather than running underneath the ad.
 function WaveformPiece({ left, width: w }: { left: number; width: number }) {
-  const step = 4;
+  const step = 3; // denser bars, closer to his waveform
   const n = Math.max(0, Math.floor(w / step));
   const bars = [];
   for (let i = 0; i < n; i++) {
     const x = i * step + 2;
-    // his "waveforms" band is ~67px tall, centered inside the 112px track
-    const h = barHeight(Math.round((left + x) / step)) * 67;
+    // his "waveform" runs ~85px tall, centered inside the 112px track
+    const h = barHeight(Math.round((left + x) / step)) * 85;
     bars.push({ x, h });
   }
   return (
