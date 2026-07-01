@@ -18,20 +18,23 @@ body {
     Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* thin scrollbar for the timeline scroll area */
+/* timeline scrollbar — Frame 154: 8px tall, radius 8, zinc/200 #E4E4E7 */
+.timeline-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #e4e4e7 transparent;
+}
 .timeline-scroll::-webkit-scrollbar {
-  height: 10px;
+  height: 8px;
 }
 .timeline-scroll::-webkit-scrollbar-track {
-  background: #f1f1f4;
-  border-radius: 6px;
+  background: transparent;
 }
 .timeline-scroll::-webkit-scrollbar-thumb {
-  background: #d4d4d8;
-  border-radius: 6px;
+  background: #e4e4e7;
+  border-radius: 8px;
 }
 .timeline-scroll::-webkit-scrollbar-thumb:hover {
-  background: #b8b8c0;
+  background: #d4d4d8;
 }
 
 /* timeline track base. The waveform (white bars) is drawn as an SVG overlay in
