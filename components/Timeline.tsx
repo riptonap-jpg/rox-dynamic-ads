@@ -55,14 +55,15 @@ const INNER_H = TRACK_H - INNER_PAD * 2; // 112, the block height
 // A real ad block sits between two of these with a 2px dark gap on each side, so
 // the waveform genuinely breaks rather than running underneath the ad.
 function WaveformPiece({ left, width: w }: { left: number; width: number }) {
-  const step = 3; // denser bars, closer to his waveform
+  const step = 7; // bar pitch — a touch more space between bars
   const n = Math.max(0, Math.floor(w / step));
+  const mid = 56; // baseline: tall bars grow up, short stubs mirror below (his look)
   const bars = [];
   for (let i = 0; i < n; i++) {
     const x = i * step + 2;
-    // his "waveform" runs ~85px tall, centered inside the 112px track
-    const h = barHeight(Math.round((left + x) / step)) * 85;
-    bars.push({ x, h });
+    const env = barHeight(Math.round((left + x) / step));
+    // top bar varies with the audio envelope; bottom stub is a uniform short line
+    bars.push({ x, top: env * 44, bot: 6 });
   }
   return (
     <div
@@ -71,7 +72,10 @@ function WaveformPiece({ left, width: w }: { left: number; width: number }) {
     >
       <svg width={w} height={INNER_H}>
         {bars.map((b, i) => (
-          <rect key={i} x={b.x} y={(INNER_H - b.h) / 2} width={2} height={b.h} rx={1} fill="#ffffff" opacity={0.72} />
+          <g key={i}>
+            <rect x={b.x} y={mid - b.top} width={2} height={b.top} rx={1} fill="#ffffff" opacity={0.75} />
+            <rect x={b.x} y={mid + 2} width={2} height={b.bot} rx={1} fill="#ffffff" opacity={0.5} />
+          </g>
         ))}
       </svg>
     </div>
