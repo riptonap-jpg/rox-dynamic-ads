@@ -54,16 +54,20 @@ const INNER_H = TRACK_H - INNER_PAD * 2; // 112, the block height
 // One episode segment: a fuchsia/300 card with the white waveform inside it.
 // A real ad block sits between two of these with a 2px dark gap on each side, so
 // the waveform genuinely breaks rather than running underneath the ad.
+const WAVE_STEP = 7; // bar pitch, shared by the bars and their stub row
+
+// One episode segment: a fuchsia/300 card with the white waveform inside it.
+// Tall bars grow up from a baseline near the frame bottom; the uniform stubs live
+// just below the frame (see WaveStubs) rather than inside it.
 function WaveformPiece({ left, width: w }: { left: number; width: number }) {
-  const step = 7; // bar pitch — a touch more space between bars
+  const step = WAVE_STEP;
   const n = Math.max(0, Math.floor(w / step));
-  const mid = 56; // baseline: tall bars grow up, short stubs mirror below (his look)
+  const mid = 112; // baseline at the frame bottom; bars grow up from here
   const bars = [];
   for (let i = 0; i < n; i++) {
     const x = i * step + 2;
     const env = barHeight(Math.round((left + x) / step));
-    // top bar varies with the audio envelope; bottom stub is a uniform short line
-    bars.push({ x, top: env * 44, bot: 6 });
+    bars.push({ x, top: env * 80 });
   }
   return (
     <div
@@ -72,13 +76,29 @@ function WaveformPiece({ left, width: w }: { left: number; width: number }) {
     >
       <svg width={w} height={INNER_H}>
         {bars.map((b, i) => (
-          <g key={i}>
-            <rect x={b.x} y={mid - b.top} width={2} height={b.top} rx={1} fill="#ffffff" opacity={0.75} />
-            <rect x={b.x} y={mid + 2} width={2} height={b.bot} rx={1} fill="#ffffff" opacity={0.5} />
-          </g>
+          <rect key={i} x={b.x} y={mid - b.top} width={2} height={b.top} rx={1} fill="#ffffff" opacity={0.75} />
         ))}
       </svg>
     </div>
+  );
+}
+
+// Uniform, slightly-thinner stub lines that sit just BELOW the track frame, in the
+// timestamp strip. Rendered per video segment so they align with the bars above.
+function WaveStubs({ left, width: w }: { left: number; width: number }) {
+  const step = WAVE_STEP;
+  const n = Math.max(0, Math.floor(w / step));
+  const xs = [];
+  for (let i = 0; i < n; i++) xs.push(i * step + 2);
+  return (
+    <svg
+      className="absolute pointer-events-none"
+      style={{ left, top: 20 + INNER_PAD + INNER_H + 3, width: w, height: 8 }}
+    >
+      {xs.map((x, i) => (
+        <rect key={i} x={x} y={0} width={1.5} height={6} rx={0.75} fill="#d4d4d8" />
+      ))}
+    </svg>
   );
 }
 
@@ -290,6 +310,17 @@ export default function Timeline({
               );
             })}
           </div>
+
+          {/* uniform stub lines just below the frame, in the timestamp strip */}
+          {layout.segments.map((s) =>
+            s.kind === "video" ? (
+              <WaveStubs
+                key={`st-${s.dispStart}-${s.vStart}`}
+                left={INNER_PAD + s.dispStart * pixelsPerSecond}
+                width={Math.max(0, s.dispDur * pixelsPerSecond - SEG_GAP)}
+              />
+            ) : null
+          )}
 
           {/* red playhead: draggable flag (can be dragged into ad blocks) + line */}
           <div
