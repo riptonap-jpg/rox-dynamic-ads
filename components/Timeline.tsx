@@ -93,10 +93,10 @@ function WaveStubs({ left, width: w }: { left: number; width: number }) {
   return (
     <svg
       className="absolute pointer-events-none"
-      style={{ left, top: 20 + INNER_PAD + INNER_H + 3, width: w, height: 8 }}
+      style={{ left, top: 20 + TRACK_H + 12, width: w, height: 8 }}
     >
       {xs.map((x, i) => (
-        <rect key={i} x={x} y={0} width={1.5} height={6} rx={0.75} fill="#d4d4d8" />
+        <rect key={i} x={x} y={0} width={1.5} height={6} rx={0.75} fill="#9ca3af" />
       ))}
     </svg>
   );
@@ -348,7 +348,7 @@ export default function Timeline({
           </div>
 
           {/* ruler */}
-          <div className="relative h-6 mt-2 select-none">
+          <div className="relative h-6 mt-6 select-none">
             {ticks.map((t) => (
               <div key={t} className="absolute top-0 flex flex-col items-center" style={{ left: INNER_PAD + t * pixelsPerSecond, transform: "translateX(-50%)" }}>
                 <span className="w-px h-2 bg-zinc-300" />
