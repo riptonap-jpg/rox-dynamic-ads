@@ -59,7 +59,8 @@ function WaveformPiece({ left, width: w }: { left: number; width: number }) {
   const bars = [];
   for (let i = 0; i < n; i++) {
     const x = i * step + 2;
-    const h = barHeight(Math.round((left + x) / step)) * (INNER_H - 40) + 10;
+    // his "waveforms" band is ~67px tall, centered inside the 112px track
+    const h = barHeight(Math.round((left + x) / step)) * 67;
     bars.push({ x, h });
   }
   return (
@@ -69,7 +70,7 @@ function WaveformPiece({ left, width: w }: { left: number; width: number }) {
     >
       <svg width={w} height={INNER_H}>
         {bars.map((b, i) => (
-          <rect key={i} x={b.x} y={(INNER_H - b.h) / 2} width={2} height={b.h} rx={1} fill="#ffffff" opacity={0.6} />
+          <rect key={i} x={b.x} y={(INNER_H - b.h) / 2} width={2} height={b.h} rx={1} fill="#ffffff" opacity={0.72} />
         ))}
       </svg>
     </div>
@@ -211,7 +212,7 @@ export default function Timeline({
               if (e.key === "Enter") commitEdit();
               if (e.key === "Escape") setEditing(false);
             }}
-            className="w-28 text-center text-base tabular-nums text-zinc-800 bg-transparent outline-none border-b border-zinc-300"
+            className="h-10 w-24 px-3 text-center text-base tabular-nums text-zinc-800 rounded-lg border border-zinc-300 bg-white outline-none focus:border-zinc-400"
           />
         ) : (
           <button
@@ -219,7 +220,7 @@ export default function Timeline({
               setEditValue(formatClock(playheadDisplay));
               setEditing(true);
             }}
-            className="text-base tabular-nums text-zinc-800 hover:text-zinc-900 px-2 py-1 rounded"
+            className="h-10 inline-flex items-center px-3 rounded-lg border border-zinc-200 text-base tabular-nums text-zinc-800 hover:border-zinc-300 transition-colors"
             title="Click to edit"
           >
             {formatClock(playheadDisplay)}
