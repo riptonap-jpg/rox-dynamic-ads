@@ -1,4 +1,4 @@
-"use client";
+""use client";
 
 import { useRef, useState, useEffect, PointerEvent } from "react";
 import { Marker, formatClock } from "@/lib/types";
